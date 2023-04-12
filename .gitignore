@@ -1,0 +1,4 @@
+.env
+eglassenv/
+__pycache__
+images/
