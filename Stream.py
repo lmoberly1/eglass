@@ -4,6 +4,10 @@ import os
 import sys
 from FaceRecognition import FaceRecognition
 from Data import Data
+try:
+    from picamera2 import Picamera2
+except:
+    print("Couldn't install Picamera")
 
 class Stream():
 
@@ -11,6 +15,11 @@ class Stream():
         self.FaceRecognition = FaceRecognition('./models/shape_predictor_5_face_landmarks.dat', './models/dlib_face_recognition_resnet_model_v1.dat')
         self.Data = Data()
         self.data = self.Data.data
+        try:
+            self.picam = Picamera2()
+            self.picam.start()
+        except:
+            print("Couldn't start Picam")
 
 
     def mark_data(self, frame):
@@ -63,6 +72,7 @@ class Stream():
         :param webcam_id: id of webcam
         """
         cap = cv.VideoCapture(webcam_id)
+        
         if not cap.isOpened():
             exit()
         try:
@@ -92,6 +102,38 @@ class Stream():
         except KeyboardInterrupt:
             print('End Program.')
 
+            
+    def run_pi_video(self):
+        try:
+            # Infinite Play Loop
+            i = 0
+            while (True):
+                i += 1
+                
+                frame = self.picam.capture_array()
+                frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+                frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+                key = cv.waitKey(1)
+                if key == ord('q'):
+                    break
+                elif key == ord('r'):
+                    print('pressed r')
+                try:
+                    # Facial detection
+                    if (i % 2 == 0):
+                        print('Capturing frame for detection...')
+                        i = 0
+                        face_encodings, locations, names = self.mark_data(frame)
+                        frame = self.FaceRecognition.draw_frame(frame, names, locations) 
+                        cv.imshow('Video Output', frame)
+
+                except Exception as e:
+                    print('Exception: ', e)
+                    break
+        except KeyboardInterrupt:
+            print('End Program')
+                    
+
 
 if __name__ == '__main__':
     stream = Stream()
@@ -100,3 +142,5 @@ if __name__ == '__main__':
         stream.label_image('./images')
     elif program == 'video':
         stream.run_video(0)
+    elif program == 'pivideo':
+        stream.run_pi_video()
