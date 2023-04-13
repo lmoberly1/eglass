@@ -84,8 +84,6 @@ class Stream():
                 key = cv.waitKey(1)
                 if key == ord('q'):
                     break
-                elif key == ord('r'):
-                    print('pressed r')
                 try:
                     # Facial detection
                     if (i % 2 == 0):
@@ -94,30 +92,28 @@ class Stream():
                         face_encodings, locations, names = self.mark_data(frame)
                         frame = self.FaceRecognition.draw_frame(frame, names, locations) 
                         cv.imshow('Video Output', frame)
-
                 except Exception as e:
                     print('Exception: ', e)
                     break
-
         except KeyboardInterrupt:
             print('End Program.')
 
             
     def run_pi_video(self):
+        """
+        Capture video from picamera and run face recognition
+        """
         try:
             # Infinite Play Loop
             i = 0
             while (True):
                 i += 1
-                
                 frame = self.picam.capture_array()
                 frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
                 frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
                 key = cv.waitKey(1)
                 if key == ord('q'):
                     break
-                elif key == ord('r'):
-                    print('pressed r')
                 try:
                     # Facial detection
                     if (i % 2 == 0):
@@ -126,7 +122,6 @@ class Stream():
                         face_encodings, locations, names = self.mark_data(frame)
                         frame = self.FaceRecognition.draw_frame(frame, names, locations) 
                         cv.imshow('Video Output', frame)
-
                 except Exception as e:
                     print('Exception: ', e)
                     break
