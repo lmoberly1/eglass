@@ -12,28 +12,24 @@ def main():
     adv = NameAdvertisement(0)
     adv.register()
 
-    # functions = [stream.run_pi_video, app.run]
-    functions = [stream.run_pi_video]
-    processes = []
+    # data = parent_conn.recv()
+    # while (data):
+    #     print('Received data', data)
+    #     data = parent_conn.recv()
+
     print('Beginning Processing')
 
     parent_conn, child_conn = multiprocessing.Pipe()
+    p1 = multiprocessing.Process(target=stream.run_pi_video, args=(child_conn,))
+    p2 = multiprocessing.Process(target=app.run, args=(parent_conn,))
 
-    for worker in functions:
-        p = multiprocessing.Process(target=worker, args=(child_conn,))
-        processes.append(p)
-        p.start()
-
-    print('Processes are Started ', len(processes))
-    data = parent_conn.recv()
-    while (data):
-        print('Received data', data)
-        data = parent_conn.recv()
+    # Start the child processes
+    p1.start()
+    p2.start()
 
     # Wait for all processes to complete
-    for p in processes:
-        print('process')
-        p.join()
+    p1.join()
+    p2.join()
 
     print('All workers finished')
 
