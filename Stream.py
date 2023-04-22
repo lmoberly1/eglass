@@ -15,11 +15,7 @@ class Stream():
         self.FaceRecognition = FaceRecognition('./models/shape_predictor_5_face_landmarks.dat', './models/dlib_face_recognition_resnet_model_v1.dat')
         self.Data = Data()
         self.data = self.Data.data
-        try:
-            self.picam = Picamera2()
-            self.picam.start()
-        except:
-            print("Couldn't start Picam")
+        self.picam = None
 
 
     def mark_data(self, frame):
@@ -99,34 +95,54 @@ class Stream():
             print('End Program.')
 
             
-    def run_pi_video(self):
+    def run_pi_video(self, conn=None):
         """
         Capture video from picamera and run face recognition
         """
+        print('RUNNING PI VIDEO')
         try:
-            # Infinite Play Loop
-            i = 0
-            while (True):
-                i += 1
-                frame = self.picam.capture_array()
-                frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-                frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
-                key = cv.waitKey(1)
-                if key == ord('q'):
-                    break
-                try:
-                    # Facial detection
-                    if (i % 2 == 0):
-                        print('Capturing frame for detection...')
-                        i = 0
-                        face_encodings, locations, names = self.mark_data(frame)
-                        frame = self.FaceRecognition.draw_frame(frame, names, locations) 
-                        cv.imshow('Video Output', frame)
-                except Exception as e:
-                    print('Exception: ', e)
-                    break
-        except KeyboardInterrupt:
-            print('End Program')
+            self.picam = Picamera2()
+            self.picam.start()
+        except:
+            print("Couldn't start Picam")
+
+        for i in range(5):
+            frame = self.picam.capture_array()
+            frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+            face_encodings, locations, names = self.mark_data(frame) 
+            conn.send([42, None, 'hello', i])
+        conn.send(None)
+        conn.close()
+        return 
+
+        # try:
+        #     # Infinite Play Loop
+        #     i = 1
+        #     while (i != 0):
+        #         i += 1
+        #         frame = self.picam.capture_array()
+        #         frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        #         frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+        #         # key = cv.waitKey(1)
+        #         # if key == ord('q'):
+        #         #     break
+        #         try:
+        #             # Facial detection
+        #             if (i % 2 == 0):
+        #                 print('Capturing frame for detection...')
+        #                 i = 0
+        #                 face_encodings, locations, names = self.mark_data(frame)
+        #                 # for name in names:
+        #                 #     shared_list.append(name)
+        #                 shared_list[0] = 'luke'
+        #                 frame = self.FaceRecognition.draw_frame(frame, names, locations) 
+        #                 # cv.imshow('Video Output', frame)
+        #         except Exception as e:
+        #             print('Exception: ', e)
+        #             break
+        # except KeyboardInterrupt:
+        #     print('End Program')
                     
 
 
