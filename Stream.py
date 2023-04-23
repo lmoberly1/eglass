@@ -96,7 +96,7 @@ class Stream():
             print('End Program.')
 
             
-    def run_pi_video(self, service=None):
+    def run_pi_video(self, conn=None):
         """
         Capture video from picamera and run face recognition
         """
@@ -120,13 +120,16 @@ class Stream():
                     if (i % 2 == 0):
                         i = 0
                         face_encodings, locations, names = self.mark_data(frame)
-                        if service:
-                            service.set_name(names)
+                        # Send to pipe
+                        if conn and not conn.poll():
+                            print('-- Sending Names --')
+                            conn.send(names)
                         frame = self.FaceRecognition.draw_frame(frame, names, locations) 
                 except Exception as e:
                     print('Exception: ', e)
                     break
         except KeyboardInterrupt:
+            conn.close()
             print('End Program')
                     
 

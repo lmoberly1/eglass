@@ -19,19 +19,19 @@ class NameAdvertisement(Advertisement):
 class NameService(Service):
     NAME_SVC_UUID = "00000001-710e-4a5b-8d75-3e5b444bc3cf"
 
-    def __init__(self, index):
+    def __init__(self, index, conn):
         self.names = []
+        self.conn = conn
 
         Service.__init__(self, index, self.NAME_SVC_UUID, True)
         self.add_characteristic(NameCharacteristic(self))
     
     def set_name(self, names):
-        print('SETTING NAMES', names)
         self.names = names
     
     def read_names(self):
-        return self.names
-
+        names = self.conn.recv()
+        return names
 
 
 class NameCharacteristic(Characteristic):
@@ -49,9 +49,10 @@ class NameCharacteristic(Characteristic):
     def get_names(self):
         value = []
         names = self.service.read_names()
-        print('GETTING NAMES', names)
+        print('-- Getting Names --', names)
+        names_str = ''.join(names)
 
-        for c in names:
+        for c in names_str:
             value.append(dbus.Byte(c.encode()))
 
         return value
