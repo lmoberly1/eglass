@@ -123,7 +123,10 @@ class Stream():
                         face_encodings, locations, names = self.mark_data(frame)
                         # Send to pipe
                         if conn:
-                            conn.send(names)
+                            if len(names) < 1:
+                                conn.send(["No Faces Detected"])
+                            else:
+                                conn.send(names)
                         frame = self.FaceRecognition.draw_frame(frame, names, locations) 
                 except Exception as e:
                     print('Exception: ', e)
