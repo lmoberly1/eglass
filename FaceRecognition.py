@@ -35,7 +35,6 @@ class FaceRecognition():
 
         # Detect faces in image
         dets = self.detector(img, 1)
-        print("Number of faces detected: {}".format(len(dets)))
 
         # Get location and encoding for each face
         detection_encodings = []

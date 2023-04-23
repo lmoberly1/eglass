@@ -3,6 +3,7 @@ import numpy as np
 import os
 import sys
 import dbus
+import multiprocessing
 from FaceRecognition import FaceRecognition
 from Data import Data
 try:
@@ -121,8 +122,7 @@ class Stream():
                         i = 0
                         face_encodings, locations, names = self.mark_data(frame)
                         # Send to pipe
-                        if conn and not conn.poll():
-                            print('-- Sending Names --')
+                        if conn:
                             conn.send(names)
                         frame = self.FaceRecognition.draw_frame(frame, names, locations) 
                 except Exception as e:

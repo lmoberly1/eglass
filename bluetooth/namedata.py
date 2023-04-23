@@ -30,7 +30,9 @@ class NameService(Service):
         self.names = names
     
     def read_names(self):
-        names = self.conn.recv()
+        names = None
+        while self.conn.poll():
+            names = self.conn.recv()
         return names
 
 
@@ -80,8 +82,8 @@ class NameCharacteristic(Characteristic):
 
     def ReadValue(self, options):
         value = self.get_names()
-
-        return value
+        if value: return value
+        else: return ""
 
 class NameDescriptor(Descriptor):
     NAME_DESCRIPTOR_UUID = "2901"
