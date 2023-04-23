@@ -13,20 +13,25 @@ NOTIFY_TIMEOUT = 5000
 class NameAdvertisement(Advertisement):
     def __init__(self, index):
         Advertisement.__init__(self, index, "peripheral")
-        self.add_local_name("Names") # CHANGED
+        self.add_local_name("Names")
         self.include_tx_power = True
 
 class NameService(Service):
     NAME_SVC_UUID = "00000001-710e-4a5b-8d75-3e5b444bc3cf"
 
     def __init__(self, index):
-        self.name = ''
+        self.names = []
 
         Service.__init__(self, index, self.NAME_SVC_UUID, True)
         self.add_characteristic(NameCharacteristic(self))
     
-    def set_name(self, name):
-        self.name = name
+    def set_name(self, names):
+        print('SETTING NAMES', names)
+        self.names = names
+    
+    def read_names(self):
+        return self.names
+
 
 
 class NameCharacteristic(Characteristic):
@@ -41,25 +46,19 @@ class NameCharacteristic(Characteristic):
         self.add_descriptor(NameDescriptor(self))
 
 
-    def get_name(self):
-        print("getting name")
-        names = ['Luke', 'Emma', 'Henry', 'Daniel', 'Griffin']
-
-        # get random name from array
-        name = random.choice(names)
-        self.service.set_name(name)
-
+    def get_names(self):
         value = []
-        name = self.service.name
+        names = self.service.read_names()
+        print('GETTING NAMES', names)
 
-        for c in name:
+        for c in names:
             value.append(dbus.Byte(c.encode()))
 
         return value
 
     def set_name_callback(self):
         if self.notifying:
-            value = self.get_name()
+            value = self.get_names()
             self.PropertiesChanged(GATT_CHRC_IFACE, {"Value": value}, [])
 
         return self.notifying
@@ -71,7 +70,7 @@ class NameCharacteristic(Characteristic):
         self.notifying = True
         print('Now notifying on peripheral')
 
-        value = self.get_name()
+        value = self.get_names()
         self.PropertiesChanged(GATT_CHRC_IFACE, {"Value": value}, [])
         self.add_timeout(NOTIFY_TIMEOUT, self.set_name_callback)
 
@@ -79,7 +78,7 @@ class NameCharacteristic(Characteristic):
         self.notifying = False
 
     def ReadValue(self, options):
-        value = self.get_name()
+        value = self.get_names()
 
         return value
 

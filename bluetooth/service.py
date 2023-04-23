@@ -43,7 +43,6 @@ class Application(dbus.service.Object):
     @dbus.service.method(DBUS_OM_IFACE, out_signature = "a{oa{sa{sv}}}")
     def GetManagedObjects(self):
         response = {}
-
         for service in self.services:
             response[service.get_path()] = service.get_properties()
             chrcs = service.get_characteristics()
@@ -72,7 +71,7 @@ class Application(dbus.service.Object):
                 reply_handler=self.register_app_callback,
                 error_handler=self.register_app_error_callback)
 
-    def run(self, conn=None):
+    def run(self):
         self.mainloop.run()
 
     def quit(self):
@@ -101,7 +100,7 @@ class Service(dbus.service.Object):
                                 signature='o')
                 }
         }
-
+        
     def get_path(self):
         return dbus.ObjectPath(self.path)
 

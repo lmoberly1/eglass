@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 import sys
+import dbus
 from FaceRecognition import FaceRecognition
 from Data import Data
 try:
@@ -95,7 +96,7 @@ class Stream():
             print('End Program.')
 
             
-    def run_pi_video(self, conn=None):
+    def run_pi_video(self, service=None):
         """
         Capture video from picamera and run face recognition
         """
@@ -106,43 +107,27 @@ class Stream():
         except:
             print("Couldn't start Picam")
 
-        for i in range(5):
-            frame = self.picam.capture_array()
-            frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
-            face_encodings, locations, names = self.mark_data(frame) 
-            conn.send([42, None, 'hello', i])
-        conn.send(None)
-        conn.close()
-        return 
-
-        # try:
-        #     # Infinite Play Loop
-        #     i = 1
-        #     while (i != 0):
-        #         i += 1
-        #         frame = self.picam.capture_array()
-        #         frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        #         frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
-        #         # key = cv.waitKey(1)
-        #         # if key == ord('q'):
-        #         #     break
-        #         try:
-        #             # Facial detection
-        #             if (i % 2 == 0):
-        #                 print('Capturing frame for detection...')
-        #                 i = 0
-        #                 face_encodings, locations, names = self.mark_data(frame)
-        #                 # for name in names:
-        #                 #     shared_list.append(name)
-        #                 shared_list[0] = 'luke'
-        #                 frame = self.FaceRecognition.draw_frame(frame, names, locations) 
-        #                 # cv.imshow('Video Output', frame)
-        #         except Exception as e:
-        #             print('Exception: ', e)
-        #             break
-        # except KeyboardInterrupt:
-        #     print('End Program')
+        try:
+            # Infinite Play Loop
+            i = 0
+            while (True):
+                i += 1
+                frame = self.picam.capture_array()
+                frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+                frame = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+                try:
+                    # Facial detection
+                    if (i % 2 == 0):
+                        i = 0
+                        face_encodings, locations, names = self.mark_data(frame)
+                        if service:
+                            service.set_name(names)
+                        frame = self.FaceRecognition.draw_frame(frame, names, locations) 
+                except Exception as e:
+                    print('Exception: ', e)
+                    break
+        except KeyboardInterrupt:
+            print('End Program')
                     
 
 
